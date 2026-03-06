@@ -61,15 +61,18 @@ do
 cpat -x 33-RhizophagusIrregularisNewHexamerTable.tsv \
 -d 55-RhizophagusIrregularisNew.logit.RData --top-orf=5 \
 -g 01-$i-illumina-filtered-simple.fasta -o 02-$i-cpat-lnRNA-pred
-
 wait
-
 awk 'NR>1 && $NF <= 0.54 {print $1}' 02-$i-cpat-lnRNA-pred.ORF_prob.best.tsv > 03-$i-cpat-lnRNA-pred_IDs.txt 
-
 wait
-
 seqkit grep -n -f 03-$i-cpat-lnRNA-pred_IDs.txt \
 01-$i-illumina-filtered-simple.fasta \
 > 05-$i-cpat-lnRNA-pred_IDs.fasta
+done
 
+# Seperating haplotypes
+for i in A4 A5 G1 SL1
+do
+grep -wFf 03-$i-cpat-lnRNA-pred_IDs.txt 03-$i-mapped_classification.filtered_lite_classification.txt | awk '{OFS="\t"} $2 ~ /Hap1/ {print $1, $2, $7}' > 33-$i-lncRNA-Hap1.txt
+wait
+grep -wFf 03-$i-cpat-lnRNA-pred_IDs.txt 03-$i-mapped_classification.filtered_lite_classification.txt | awk '{OFS="\t"} $2 ~ /Hap2/ {print $1, $2, $7}' > 33-$i-lncRNA-Hap2.txt
 done
