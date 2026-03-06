@@ -1,16 +1,16 @@
-# Generate hexamer table
+# Generate hexamer table for Candida
 make_hexamer_tab -c 01-CandidaAlbicansCDS.fasta \
 -n 02-CandidaAlbicanslncRNA.fasta \
 > 03-CandidaAlbicansHexamerTable.tsv
 
-# Train logistic model
+# Train logistic model for Candida
 make_logitModel \
 -x 03-CandidaAlbicansHexamerTable.tsv \
 -c 04-CandidaAlbicansRNA.fasta \
 -n 02-CandidaAlbicanslncRNA.fasta \
 -o 05-CandidaAlbicans
 
-# Run CPAT
+# Run CPAT with Candida model
 cpat.py \
 -g 04-RhizophagusIrregularisRNA.fasta \
 -d 05-CandidaAlbicans.logit.RData \
@@ -29,3 +29,5 @@ cut -f1 06-RhizophagusPredicted_lncRNA.tsv | tail -n +2 \
 seqkit grep -f 07-RhizophagusPredicted_lncRNA_IDs.txt \
 04-RhizophagusIrregularisRNA.fasta \
 > 08-RhizophagusPredicted_lncRNA_IDs.fasta
+
+# 
