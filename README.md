@@ -13,4 +13,4 @@ Seperating_Haplotype.sh Seperates the heterokaryons by haplotype
 
 Count genes: cut -d'.' -f1,2 33-$i-lncRNA-Hap2.txt | sort -u | wc -l
 
-###GFFCOMPARE
+### GFFCOMPARE
