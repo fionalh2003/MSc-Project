@@ -33,3 +33,6 @@ Removes what is known to not be lncRNAs
 
 ### MiniMap2
 Mapping.sh
+Map the transcripts to the genome of each strain
+
+See what is strain specific and what is ubiquitous
