@@ -12,7 +12,9 @@ Used output from second CPAT to make a third more refined CPAT and ran it on all
 
 ### GFFCOMPARE
 GffCompare.sh
+
 Classify lncRNA based on their location with respect to coding genes 
+
 Class codes uixjop considered to be lncRNA
 
 ### Pfam
