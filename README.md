@@ -30,3 +30,6 @@ Rfam.sh
 Compares transcripts to known non-coding
 
 Removes what is known to not be lncRNAs
+
+### MiniMap2
+Mapping.sh
