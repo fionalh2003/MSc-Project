@@ -18,3 +18,15 @@ Classify lncRNA based on their location with respect to coding genes
 Class codes uixjop considered to be lncRNA
 
 ### Pfam
+Pfam.sh 
+
+Converts transcripts to ORFs then compares them to protein database
+
+Remove transcripts that match to protein coding domains
+
+### Rfam
+Rfam.sh
+
+Compares transcripts to known non-coding
+
+Removes what is known to not be lncRNAs
