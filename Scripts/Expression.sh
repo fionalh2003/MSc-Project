@@ -1,5 +1,5 @@
 # filter TPM to only include lncRNA
-awk 'NR==FNR{a[$1]; next} FNR==1 || $1 in a' transcripts_to_keep.tx 20-$i-super-table-iso-class-TPM.txt > 05-$i-lncRNA-TPM.txt
+awk 'NR==FNR{a[$1]; next} FNR==1 || $1 in a' 04-$i-lncRNA.txt 20-$i-super-table-iso-class-TPM.txt > 05-$i-lncRNA-TPM.txt
 
 # only include transcript name and TPM for each host
 cut -f1,8,9,10 05-$i-lncRNA-TPM.txt > 06-$i-TPM.txt
