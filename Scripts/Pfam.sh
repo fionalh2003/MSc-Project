@@ -5,7 +5,7 @@ wget ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
 gunzip Pfam-A.hmm.gz
 
 # Convert to ORFs
-TransDecoder.LongOrfs -t 11-Clustered-lncRNA.fasta
+TransDecoder.LongOrfs -t 06-NonCoding.fasta
 
 # Run Pfam on the ORFs
 hmmscan \
@@ -21,7 +21,7 @@ grep -v "^#" pfam.domtblout | awk '{print $4}' | sort | uniq > pfam_hits.txt
 sed 's/\.[^.]*$//' pfam_hits.txt | sort -u > pfam_transcripts.txt
 
 # Remove hits from fasta 
-seqkit grep -v -f pfam_transcripts.txt 11-Clustered-lncRNA.fasta > 111-noPfam_transcripts.fa
+seqkit grep -v -f pfam_transcripts.txt 06-NonCoding.fasta > 07-PfamFiltered.fasta
 
 # Make a file with just headers 
-grep "^>" 111-noPfam_transcripts.fa | sed 's/^>//' > 111-Heterokaryon-noPfam_transcriptsIDs.txt
+grep "^>" 07-PfamFiltered.fasta | sed 's/^>//' > 07-PfamFilteredHeaders.txt
