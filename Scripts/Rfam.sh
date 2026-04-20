@@ -9,13 +9,13 @@ cmpress Rfam.cm
 
 # Run Rfam 
 cmscan \
-  --cpu 20 \
+  --cpu 16 \
   --rfam \
   --cut_ga \
   --nohmmonly \
   --tblout rfam.tbl \
   Rfam.cm \
-  111-noPfam_transcripts.fa \
+  07-PfamFiltered.fasta \
   > rfam.out
 
 # Extract Rfam hits
