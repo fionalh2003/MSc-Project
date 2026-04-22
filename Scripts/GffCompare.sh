@@ -1,16 +1,15 @@
-# Filter gff and convert them to gtf
-for i in 4401 A1 B3 C2 DAOM
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
-  grep -F -w -f 03-$i-cpat-lnRNA-pred_IDs.txt 05-$i-mapped.gff \
+  grep -F -w -f 03-$i-NonCodingIDs.txt 05-$i-mapped.gff \
 > 01-$i-lncRNA-Mapped.gff
 wait
 gffread 01-$i-lncRNA-Mapped.gff -T -o 01-$i-lncRNA-Mapped.gtf
 done
 
 # Running Gff compare
-for i in A4 A5 G1 SL1
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
-gffcompare -r 02-${i}-gene-ann-mod.gtf -o 04-${i}-GFFCompare 03-${i}-lncRNA-Mapped.gtf
+gffcompare -r 02-${i}-gene-ann-mod.gtf -o 06-${i}-GFFCompare 01-$i-lncRNA-Mapped.gtf
 done
 
 # Filter for only lncRNA codes
