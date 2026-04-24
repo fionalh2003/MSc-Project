@@ -15,7 +15,7 @@ cmscan \
   --nohmmonly \
   --tblout rfam.tbl \
   Rfam.cm \
-  07-PfamFiltered.fasta \
+  14-PfamFiltered.fasta \
   > rfam.out
 
 # Extract Rfam hits
