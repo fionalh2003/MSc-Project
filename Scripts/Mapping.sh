@@ -1,7 +1,7 @@
 # Mapping transcripts to the genomes
 for i in A4-hap1 A4-hap2 A5-hap1 A5-hap2 G1-hap1 G1-hap2 4401 A1 B3 C2 DAOM 
 do 
-minimap2 -x splice:hq -uf 01-$i-genome.fasta 11-lncRNA.fa > 02-$i-MiniMap.txt
+minimap2 -x splice:hq -uf 01-$i-genome.fasta 15-lncRNA-Candidates.fasta > 02-$i-MiniMap.txt
 done
 
 # Filtering to keep high quality 
