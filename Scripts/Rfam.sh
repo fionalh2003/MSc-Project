@@ -22,7 +22,7 @@ cmscan \
 grep -v "^#" rfam.tbl | awk '{print $3}' | sort | uniq > rfam_hits.txt
 
 # Removing hits
-seqkit grep -v -f rfam_hits.txt 111-noPfam_transcripts.fa > noRfam_lncRNA.fa
+seqkit grep -v -f rfam_hits.txt 14-PfamFiltered.fasta > 15-lncRNA-Candidates.fasta
 
 # Make a file with just the headers
-grep "^>" noRfam_lncRNA.fa | sed 's/^>//' > 111-noRfam_transcriptsIDs.txt
+grep "^>" 15-lncRNA-Candidates.fasta | sed 's/^>//' > 15-lncRNA-CandidatesIDs.txt
