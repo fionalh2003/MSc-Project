@@ -1,6 +1,7 @@
+# filter gff
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
-  grep -F -w -f 03-$i-NonCodingIDs.txt 05-$i-mapped.gff \
+  grep -F -w -f 04-$i-orf-filtered-IDs.txt 05-$i-mapped.gff \
 > 01-$i-lncRNA-Mapped.gff
 wait
 gffread 01-$i-lncRNA-Mapped.gff -T -o 01-$i-lncRNA-Mapped.gtf
@@ -15,11 +16,11 @@ done
 # Filter for only lncRNA codes
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
-awk '$0 ~ /class_code "[uix]"/' 06-$i-GFFCompare.annotated.gtf >07-$i-lncRNA_candidates.gtf
+awk '$0 ~ /class_code "[uixo]"/' 06-$i-GFFCompare.annotated.gtf >07-$i-lncRNA_candidates.gtf
 done
 
 # Just transcript ID and code
-for i in 4401 A4 A5 B3 C2 DAOM G1 SL1
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
 awk '$0 ~ /class_code "[a-z]"/ {
   match($0, /transcript_id "([^"]+)"/, t);
