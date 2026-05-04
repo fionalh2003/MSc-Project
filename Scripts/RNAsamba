@@ -27,3 +27,15 @@ awk '$3=="noncoding"{print $1}' 02-$i-RNAsamba_output.tsv \
   | seqkit grep -f - 01-$i-Gff-filtered.fasta \
   -o 04-$i-NonCoding.fasta
 done
+
+# Put strain name in header
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+sed '/^>/ s/$/-$i/' 04-$i-NonCoding.fasta > 05-$i-NonCodingStrain.fasta
+done
+
+# Merge Fasta files together
+cat 05* > 06-NonCoding.fasta
+
+# cd-hit to cluster
+cd-hit-est -i 06-NonCoding.fasta -o 07-Clustered-NonCoding.fasta -c 0.98 -aS 0.9 -aL 0.9 -G 0 -g 1 -T 16 -M 0
