@@ -17,3 +17,9 @@ grep ">" 03-$i-orfs.fasta | sed 's/>//' | cut -d" " -f1 > 03-$i-long-orfs.txt
 wait
 seqkit grep -v -f 03-$i-long-orfs.txt 02-$i-length-filtered.fasta -o 04-$i-orf-filtered.fasta
 done
+
+# list of headers 
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1 
+do 
+grep "^>" 04-$i-orf-filtered.fasta | sed 's/>//' > 04-$i-orf-filtered-IDs.txt
+done
