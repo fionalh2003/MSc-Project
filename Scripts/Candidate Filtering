@@ -23,3 +23,38 @@ for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do 
 grep "^>" 04-$i-orf-filtered.fasta | sed 's/>//' > 04-$i-orf-filtered-IDs.txt
 done
+
+# filter gff
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+  grep -F -w -f 04-$i-orf-filtered-IDs.txt 05-$i-mapped.gff \
+> 01-$i-lncRNA-Mapped.gff
+wait
+gffread 01-$i-lncRNA-Mapped.gff -T -o 01-$i-lncRNA-Mapped.gtf
+done
+
+# Running Gff compare
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+gffcompare -r 02-${i}-gene-ann-mod.gtf -o 06-${i}-GFFCompare 01-$i-lncRNA-Mapped.gtf
+done
+
+# Filter for only lncRNA codes
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+awk '$0 ~ /class_code "[uixo]"/' 06-$i-GFFCompare.annotated.gtf >07-$i-lncRNA_candidates.gtf
+done
+
+# Just transcript ID and code
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+awk '$0 ~ /class_code "[a-z]"/ {
+  match($0, /transcript_id "([^"]+)"/, t);
+  match($0, /class_code "([^"]+)"/, c);
+  print t[1] "\t" c[1]
+}' 07-$i-lncRNA_candidates.gtf > 08-$i-lncRNA_ClassCodes.txt
+wait
+sort -u 08-$i-lncRNA_ClassCodes.txt > 08-$i-lncRNA_UniqueClassCodes.txt
+wait
+awk '{print $1}' 08-$i-lncRNA_UniqueClassCodes.txt > 09-$i-GffCompare-lncRNA.txt
+done
