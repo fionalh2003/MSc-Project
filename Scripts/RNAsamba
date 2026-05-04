@@ -1,1 +1,29 @@
+# filter fasta
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+seqkit grep -v -f 09-$i-GffCompare-lncRNA.txt 04-$i-orf-filtered.fasta -o 01-$i-Gff-filtered.fasta
 
+# run RNAsamba
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+    echo "Running $i"
+
+    rnasamba classify \
+      02-$i-RNAsamba_output.tsv \
+      01-$i-Gff-filtered.fasta \
+      full_length_weights.hdf5
+done
+
+# filter output
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+awk '$3 == "noncoding"' 02-$i-RNAsamba_output.tsv > 03-$i-NonCoding.tsv
+done
+
+# filter fasta 
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+awk '$3=="noncoding"{print $1}' 02-$i-RNAsamba_output.tsv \
+  | seqkit grep -f - 01-$i-Gff-filtered.fasta \
+  -o 04-$i-NonCoding.fasta
+done
