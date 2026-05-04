@@ -21,7 +21,7 @@ grep -v "^#" pfam.domtblout | awk '{print $4}' | sort | uniq > pfam_hits.txt
 sed 's/\.[^.]*$//' pfam_hits.txt | sort -u > pfam_transcripts.txt
 
 # Remove hits from fasta 
-seqkit grep -v -f pfam_transcripts.txt 06-NonCoding.fasta > 07-PfamFiltered.fasta
+seqkit grep -v -f pfam_transcripts.txt 07-Clustered-NonCoding.fasta > 08-PfamFiltered.fasta
 
 # Make a file with just headers 
-grep "^>" 07-PfamFiltered.fasta | sed 's/^>//' > 07-PfamFilteredHeaders.txt
+grep "^>" 08-PfamFiltered.fasta | sed 's/^>//' > 09-PfamFilteredHeaders.txt
