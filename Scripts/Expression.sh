@@ -1,3 +1,8 @@
+# list of lncRNA
+grep "^>" 10-lncRNA-Candidates.fasta | sed 's/>//' > 01-lncRNACandidateIDs.txt
+
+# Filter list for strains
+
 # filter TPM to only include lncRNA
 awk 'NR==FNR{a[$1]; next} FNR==1 || $1 in a' 04-$i-lncRNA.txt 20-$i-super-table-iso-class-TPM.txt > 05-$i-lncRNA-TPM.txt
 
