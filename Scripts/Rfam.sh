@@ -15,14 +15,14 @@ cmscan \
   --nohmmonly \
   --tblout rfam.tbl \
   Rfam.cm \
-  14-PfamFiltered.fasta \
+  08-PfamFiltered.fasta \
   > rfam.out
 
 # Extract Rfam hits
 grep -v "^#" rfam.tbl | awk '{print $3}' | sort | uniq > rfam_hits.txt
 
 # Removing hits
-seqkit grep -v -f rfam_hits.txt 14-PfamFiltered.fasta > 15-lncRNA-Candidates.fasta
+seqkit grep -v -f rfam_hits.txt 08-PfamFiltered.fasta > 09-lncRNA-Candidates.fasta
 
 # Make a file with just the headers
-grep "^>" 15-lncRNA-Candidates.fasta | sed 's/^>//' > 15-lncRNA-CandidatesIDs.txt
+grep "^>" 09-lncRNA-Candidates.fasta | sed 's/^>//' > 10-lncRNA-CandidatesIDs.txt
