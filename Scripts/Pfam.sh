@@ -9,7 +9,7 @@ TransDecoder.LongOrfs -t 06-NonCoding.fasta
 
 # Run Pfam on the ORFs
 hmmscan \
-  --cpu 4 \
+  --cpu 2 \
   --domtblout pfam.domtblout \
   Pfam-A.hmm \
   longest_orfs.pep > pfam.log
