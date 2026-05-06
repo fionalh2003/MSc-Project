@@ -4,7 +4,7 @@ awk '/^>/ {print ">lncRNA-" ++i; next} {print}' 09-lncRNA-Candidates.fasta > 10-
 # Mapping transcripts to the genomes
 for i in A4-hap1 A4-hap2 A5-hap1 A5-hap2 G1-hap1 G1-hap2 SL1-hap1 SL1-hap2 4401 A1 B3 $
 do
-minimap2 -x splice:hq -uf 01-$i-genome.fasta 10-lncRNA-Candidates.fasta > 02-$i-MiniMa$
+minimap2 -x splice:hq -uf 01-$i-genome.fasta 10-lncRNA-Candidates.fasta > 02-$i-MiniMa
 done
 
 # Filtering to keep high quality 
