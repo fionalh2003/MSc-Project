@@ -9,14 +9,14 @@ cmpress Rfam.cm
 
 # Run Rfam 
 cmscan \
-  --cpu 16 \
+  --cpu 2 \
   --rfam \
   --cut_ga \
   --nohmmonly \
-  --tblout rfam.tbl \
+  --tblout SL1-rfam.tbl \
   Rfam.cm \
-  08-PfamFiltered.fasta \
-  > rfam.out
+  05-SL-PfamFiltered.fasta \
+  > SL1-rfam.out
 
 # Extract Rfam hits
 grep -v "^#" rfam.tbl | awk '{print $3}' | sort | uniq > rfam_hits.txt
