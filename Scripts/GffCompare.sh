@@ -16,7 +16,9 @@ done
 # Filter for only lncRNA codes
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
-awk '$0 ~ /class_code "[uixo]"/' 06-$i-GFFCompare.annotated.gtf >07-$i-lncRNA_candidates.gtf
+awk 'match($0, /class_code "([a-z])"/, a) { 
+        if (a[1] ~ /^[uixo]$/) print 
+     }' 06-$i-GFFCompare.annotated.gtf > 07-$i-lncRNA_candidates.gtf
 done
 
 # Just transcript ID and code
