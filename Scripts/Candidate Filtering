@@ -4,17 +4,15 @@ do
 seqkit seq -m 200 01-$i-illumina-filtered-simple.fasta > 02-$i-length-filtered.fasta
 done 
 
+
+
+
+
+
 # convert to orfs (00-ORFs.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1 
 do 
-orfipy 02-$i-length-filtered.fasta \
-  --pep 03-$i-longest_orfs.fa \
-  --bed 03-$i-longest_orfs.bed \
-  --longest \
-  --min 90 \
-  --start ATG \
-  --between-stops \
-  --procs 16
+TransDecoder.LongOrfs -t 02-$i-length-filtered.fasta
 done
 
 # filter orfs 
