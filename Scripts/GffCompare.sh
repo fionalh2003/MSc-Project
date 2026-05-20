@@ -26,26 +26,52 @@ for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
 
 awk '
-BEGIN { OFS="\t" }
-match($0, /class_code "([a-z])"/, a) {
-    if (a[1] ~ /^[uixo]$/) {
-        match($0, /transcript_id "([^"]+)"/, t)
-        tid = t[1]
 
-        lines[tid] = lines[tid] $0 "\n"
-        
-        if ($3 == "exon")
-            exon_count[tid]++
+# Transcript lines with desired class_code
+$3 == "transcript" {
+
+    if (match($0, /class_code "([a-z])"/, a)) {
+
+        if (a[1] ~ /^[uixo]$/) {
+
+            match($0, /transcript_id "([^"]+)"/, t)
+            tid = t[1]
+
+            keep[tid] = 1
+        }
     }
+}
+
+# Count exons for kept transcripts
+$3 == "exon" {
+
+    match($0, /transcript_id "([^"]+)"/, t)
+    tid = t[1]
+
+    if (keep[tid])
+        exon_count[tid]++
+}
+
+# Store all lines
+{
+    match($0, /transcript_id "([^"]+)"/, t)
+    tid = t[1]
+
+    all_lines[tid] = all_lines[tid] $0 "\n"
 }
 
 END {
-    for (tid in exon_count) {
+
+    for (tid in keep) {
+
         if (exon_count[tid] >= 2)
-            printf "%s", lines[tid]
+
+            printf "%s", all_lines[tid]
     }
 }
-' 06-$i-GFFCompare.annotated.gtf > 07-$i-lncRNA_candidates.gtf
+
+' 03-$i-GFFCompare.annotated.gtf > 04-$i-lncRNA_candidates.gtf
+
 done
 
 
