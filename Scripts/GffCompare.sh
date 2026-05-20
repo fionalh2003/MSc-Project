@@ -1,21 +1,55 @@
-# filter gff
+# length filtering  (00-LengthFilter.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1 
+do 
+seqkit seq -m 200 01-$i-illumina-filtered-simple.fasta > 02-$i-length-filtered.fasta
+wait 
+seqkit seq -n 02-$i-length-filtered.fasta > 02-$i-length-filtered-IDs.txt
+done 
+
+# filter gff (00-FilterGff.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
-  grep -F -w -f 04-$i-orf-filtered-IDs.txt 05-$i-mapped.gff \
+  grep -F -w -f 02-$i-length-filtered-IDs.txt 05-$i-mapped.gff \
 > 01-$i-lncRNA-Mapped.gff
 wait
 gffread 01-$i-lncRNA-Mapped.gff -T -o 01-$i-lncRNA-Mapped.gtf
 done
 
-# Running Gff compare
+# Running Gff compare (00-Gffcompare.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
-gffcompare -r 02-${i}-gene-ann-mod.gtf -o 06-${i}-GFFCompare 01-$i-lncRNA-Mapped.gtf
+gffcompare -r 02-${i}-gene-ann-mod.gtf -o 03-${i}-GFFCompare 01-$i-lncRNA-Mapped.gtf
 done
 
 # Filter for only lncRNA codes
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
+
+awk '
+BEGIN { OFS="\t" }
+match($0, /class_code "([a-z])"/, a) {
+    if (a[1] ~ /^[uixo]$/) {
+        match($0, /transcript_id "([^"]+)"/, t)
+        tid = t[1]
+
+        lines[tid] = lines[tid] $0 "\n"
+        
+        if ($3 == "exon")
+            exon_count[tid]++
+    }
+}
+
+END {
+    for (tid in exon_count) {
+        if (exon_count[tid] >= 2)
+            printf "%s", lines[tid]
+    }
+}
+' 06-$i-GFFCompare.annotated.gtf > 07-$i-lncRNA_candidates.gtf
+done
+
+
+
 awk 'match($0, /class_code "([a-z])"/, a) { 
         if (a[1] ~ /^[uixo]$/) print 
      }' 06-$i-GFFCompare.annotated.gtf > 07-$i-lncRNA_candidates.gtf
