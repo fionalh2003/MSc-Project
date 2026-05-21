@@ -89,21 +89,11 @@ wait
 awk '{print $1}' 06-$i-lncRNA_UniqueClassCodes.txt > 07-$i-GffCompare-lncRNA.txt
 done
 
-
-
-# Make fasta of predicted lncRNA genes
+# Make fasta of predicted lncRNA genes (00-GffFasta.sh)
 for i in A4 A5 G1 SL1
 do
- seqkit grep -n -f 09-$i-GffCompare-lncRNA.txt \
-    01-$i-illumina-filtered-simple.fasta \
-    > 10-$i-GffCompare-lncRNA.fasta
+ seqkit grep -n -f 07-$i-GffCompare-lncRNA.txt \
+    02-$i-length-filtered.fasta \
+    > 08-$i-GffCompare-lncRNA.fasta
 done
 
-# Put strain name in header
-sed '/^>/ s/$/-suffix/' input.fasta > output.fasta (11)
-
-# Merge Fasta files together
-cat 11* > 12-lncRNA.fa
-
-# cd-hit to cluster
-cd-hit-est -i 12-lncRNA.fasta -o 13-Clustered-lncRNA.fasta -c 0.98 -aS 0.9 -aL 0.9 -G 0 -g 1 -T 16 -M 0
