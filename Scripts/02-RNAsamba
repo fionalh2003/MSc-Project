@@ -1,0 +1,24 @@
+# run RNAsamba (00-RNAsamba.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+    echo "Running $i"
+
+    rnasamba classify \
+      01-$i-RNAsamba_output.tsv \
+      08-$i-Gff-filtered.fasta \
+      full_length_weights.hdf5
+done
+
+# filter output (00-NonCoding.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+awk '$3 == "noncoding"' 01-$i-RNAsamba_output.tsv > 02-$i-NonCoding.tsv
+done
+
+# filter fasta (00-FilterFasta.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+awk '$3=="noncoding"{print $1}' 02-$i-NonCoding.tsv \
+  | seqkit grep -f - 08-$i-Gff-filtered.fasta \
+  -o 03-$i-NonCoding.fasta
+done
