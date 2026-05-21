@@ -5,7 +5,16 @@ seqkit seq -m 200 01-$i-illumina-filtered-simple.fasta > 02-$i-length-filtered.f
 done 
 
 
+# Seperate by haplotype
+for i in A4 A5 G1 SL1
+do
+grep -wFf 09-$i-GffCompare-lncRNA.txt 03-$i-mapped_classification.filtered_lite_classification.txt | awk '{OFS="\t"} $2 ~ /Hap1/ {print $1, $2, $7}' > 09-$i-lncRNA-Hap1.txt
+wait
+grep -wFf 09-$i-GffCompare-lncRNA.txt 03-$i-mapped_classification.filtered_lite_classification.txt | awk '{OFS="\t"} $2 ~ /Hap2/ {print $1, $2, $7}' > 09-$i-lncRNA-Hap2.txt
+done
 
+# Find out how many lncRNA genes
+cut -d'.' -f1,2 09-$i-lncRNA-Hap2.txt | sort -u | wc -l
 
 
 
