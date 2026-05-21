@@ -21,16 +21,7 @@ do
 gffcompare -r 02-${i}-gene-ann-mod.gtf -o 03-${i}-GFFCompare 01-$i-lncRNA-Mapped.gtf
 done
 
-# Filter for only lncRNA codes
-for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
-do
-
-awk 'match($0, /class_code "([a-z])"/, a) { 
-        if (a[1] ~ /^[uixo]$/) print 
-     }' 06-$i-GFFCompare.annotated.gtf > 07-$i-lncRNA_candidates.gtf
-done
-
-
+# Filter for only lncRNA codes and at least 2 exons (00-lncRNA-codes.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
 
@@ -84,30 +75,21 @@ END {
 done
 
 
-# Just transcript ID and code
+# Just transcript ID and code (00-GffIDs.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
 awk '$0 ~ /class_code "[a-z]"/ {
   match($0, /transcript_id "([^"]+)"/, t);
   match($0, /class_code "([^"]+)"/, c);
   print t[1] "\t" c[1]
-}' 07-$i-lncRNA_candidates.gtf > 08-$i-lncRNA_ClassCodes.txt
+}' 04-$i-lncRNA_candidates.gtf > 06-$i-lncRNA_ClassCodes.txt
 wait
-sort -u 08-$i-lncRNA_ClassCodes.txt > 08-$i-lncRNA_UniqueClassCodes.txt
+sort -u 06-$i-lncRNA_ClassCodes.txt > 06-$i-lncRNA_UniqueClassCodes.txt
 wait
-awk '{print $1}' 08-$i-lncRNA_UniqueClassCodes.txt > 09-$i-GffCompare-lncRNA.txt
+awk '{print $1}' 06-$i-lncRNA_UniqueClassCodes.txt > 07-$i-GffCompare-lncRNA.txt
 done
 
-# Seperate by haplotype
-for i in A4 A5 G1 SL1
-do
-grep -wFf 09-$i-GffCompare-lncRNA.txt 03-$i-mapped_classification.filtered_lite_classification.txt | awk '{OFS="\t"} $2 ~ /Hap1/ {print $1, $2, $7}' > 09-$i-lncRNA-Hap1.txt
-wait
-grep -wFf 09-$i-GffCompare-lncRNA.txt 03-$i-mapped_classification.filtered_lite_classification.txt | awk '{OFS="\t"} $2 ~ /Hap2/ {print $1, $2, $7}' > 09-$i-lncRNA-Hap2.txt
-done
 
-# Find out how many lncRNA genes
-cut -d'.' -f1,2 09-$i-lncRNA-Hap2.txt | sort -u | wc -l
 
 # Make fasta of predicted lncRNA genes
 for i in A4 A5 G1 SL1
