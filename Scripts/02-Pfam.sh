@@ -5,7 +5,10 @@ wget ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
 gunzip Pfam-A.hmm.gz
 
 # Convert to ORFs
-TransDecoder.LongOrfs -t 06-NonCoding.fasta
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+TransDecoder.LongOrfs -t 03-$i-NonCoding.fasta
+done
 
 # Run Pfam on the ORFs
 hmmscan \
@@ -21,8 +24,4 @@ grep -v "^#" pfam.domtblout | awk '{print $4}' | sort | uniq > pfam_hits.txt
 sed 's/\.[^.]*$//' pfam_hits.txt | sort -u > pfam_transcripts.txt
 
 # Remove hits from fasta 
-seqkit grep -v -f pfam_transcripts.txt 07-Clustered-NonCoding.fasta > 08-PfamFiltered.fasta
-seqkit grep -v -f pfam_transcripts.txt 04-4401-NonCoding.fasta > 05-4401-PfamFiltered.fasta
-
-# Make a file with just headers 
-grep "^>" 08-PfamFiltered.fasta | sed 's/^>//' > 09-PfamFilteredHeaders.txt
+seqkit grep -v -f pfam_transcripts.txt 03-$i-NonCoding.fasta > 04-$i-PfamFiltered.fasta
