@@ -1,0 +1,43 @@
+# change headers 
+ awk '/^>/ {print ">lncRNA-" ++i; next} {print}' 04-Clustered-lncRNA.fasta > 02-lncRNA-
+Candidates.fasta
+
+# Mapping transcripts to the genomes (00-Mapping.sh)
+for i in A4-hap1 A4-hap2 A5-hap1 A5-hap2 G1-hap1 G1-hap2 SL1-hap1 SL1-hap2 4401 A1 B3 C2 DAOM $
+do
+minimap2 -x splice:hq -uf 01-$i-genome.fasta 02-lncRNA-Candidates.fasta > 03-$i-MiniMap.txt
+done
+
+# Filtering to keep high quality (00-FilteringMap.sh)
+for i in A4-hap1 A4-hap2 A5-hap1 A5-hap2 G1-hap1 G1-hap2 SL1-hap1 SL1-hap2 4401 A1 B3 C2 DAOM 
+do 
+awk '$12 > 30' 03-$i-MiniMap.txt  > 05-$i-FilteredMiniMap.txt
+done
+
+# Simplify hetero minimap
+for i in A4-hap1 A4-hap2 A5-hap1 A5-hap2 G1-hap1 G1-hap2 SL1-hap1 SL1-hap2
+do  
+    awk '{split($6, a, "_"); print $1, a[2], a[3]}' 05-$i-FilteredMiniMap.txt > 06-$i-lncRNAnStrainMiniMap.txt
+done
+
+# Simplify homo minimap
+for i in 4401 A1 B3 C2 DAOM 
+do
+    awk '{print $1, substr($6, 1, index($6, "_") - 1)}' 05-$i-FilteredMiniMap.txt > 06-$i-lncRNAnStrainMiniMap.txt
+done
+
+# finding strain specific 
+cat 06* > 07-MergedMapped.txt
+awk '{print $1, $2}' 07-MergedMapped.txt | sort -u > 07-MergedStrain.txt
+awk '{seen[$1][$2]=1; rows[$1]=rows[$1] $0 ORS} END{for(t in seen){n=0; for(s in seen[t]) n++; if(n==1) printf "%s", rows[t]}}' 07-MergedStrain.txt > 08-StrainSpecific.txt
+awk '{count[$2]++} END{for(s in count) print s, count[s]}' 08-StrainSpecific.txt | sort
+
+ # Finding shared transcripts
+awk '{t[$1][$2]=1; strains[$2]=1} END{for(s in strains)n++; for(tr in t){c=0; for(s in t[tr])c++; if(c==n) print tr}}' 07-MergedStrain.txt > 08-StrainShared.txt
+wc -l 08-StrainShared.txt
+
+ # Finding haplotype specific
+awk '{print $1, $2"-"$3}' OFS='\t' 07-MergedMapped.txt > 07-Haplotype.txt
+awk '{print $1, $2}' 07-Haplotype.txt | sort -u > 07-MergedHaplotype.txt
+awk '{seen[$1][$2]=1; rows[$1]=rows[$1] $0 ORS} END{for(t in seen){n=0; for(s in seen[t]) n++; if(n==1) printf "%s", rows[t]}}' 07-MergedHaplotype.txt > 08-HaplotypeSpecific.txt
+awk '{count[$2]++} END{for(s in count) print s, count[s]}' 08-HaplotypeSpecific.txt | sort
