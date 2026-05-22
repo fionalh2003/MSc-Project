@@ -8,21 +8,24 @@ gunzip Rfam.cm.gz
 cmpress Rfam.cm
 
 # Run Rfam (00-Rfam.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
 cmscan \
   --cpu 2 \
   --rfam \
   --cut_ga \
   --nohmmonly \
-  --tblout SL1-rfam.tbl \
+  --tblout 01-$i-rfam.tbl \
   Rfam.cm \
-  05-SL-PfamFiltered.fasta \
-  > SL1-rfam.out
+  04-$i-PfamFiltered.fasta \
+  > 01-$i-rfam.out
+done
 
-# Extract Rfam hits
-grep -v "^#" rfam.tbl | awk '{print $3}' | sort | uniq > rfam_hits.txt
+# Extract Rfam hits (00-RfamHits.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+grep -v "^#" 01-$i-rfam.tbl | awk '{print $3}' | sort | uniq > 01-$i-rfam_hits.txt
+wait
+seqkit grep -v -f 01-$i-rfam_hits.txt 04-$i-PfamFiltered.fasta > 02-$i-lncRNA-Candidates.fasta
+done
 
-# Removing hits
-seqkit grep -v -f rfam_hits.txt 08-PfamFiltered.fasta > 09-lncRNA-Candidates.fasta
-
-# Make a file with just the headers
-grep "^>" 09-lncRNA-Candidates.fasta | sed 's/^>//' > 10-lncRNA-CandidatesIDs.txt
