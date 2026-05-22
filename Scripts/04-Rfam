@@ -7,7 +7,7 @@ gunzip Rfam.cm.gz
 # Index the models 
 cmpress Rfam.cm
 
-# Run Rfam 
+# Run Rfam (00-Rfam.sh)
 cmscan \
   --cpu 2 \
   --rfam \
