@@ -29,3 +29,5 @@ wait
 seqkit grep -v -f 01-$i-rfam_hits.txt 04-$i-PfamFiltered.fasta > 02-$i-lncRNA-Candidates.fasta
 done
 
+# Cluster file
+grep -c "^>" 03-Joint-lncRNA.fcd-hit-est   -i 03-Joint-lncRNA.fasta   -o 04-Clustered-lncRNA.fasta   -c 0.98   -aS 0.95   -aL 0.95   -G 0   -g 1   -T 
