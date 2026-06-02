@@ -1,0 +1,83 @@
+# filter gtf for lncRNA candidates (00-FilterGTF.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM SL1 G1
+do
+awk '
+BEGIN{FS=OFS="\t"}
+
+NR==FNR {
+    id=$1
+    sub(/^>/,"",id)
+    keep[id]
+    next
+}
+
+$3=="transcript" {
+
+    if (match($9, /transcript_id "([^"]+)"/, a)) {
+
+        if (a[1] in keep)
+
+            print
+    }
+}
+' 01-$i-lncRNACandidateIDs.txt \
+  03-$i-GFFCompare.annotated.gtf \
+  > 04-$i-lncRNA-filtered.gtf
+
+done
+
+# convert gtf to bed file (00-BED.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+awk 'BEGIN{OFS="\t"}
+$3=="transcript"{
+    match($0,/transcript_id "([^"]+)"/,a);
+    print $1,$4-1,$5,a[1],".",$7
+}' 02-$i-gene-ann-mod.gtf > 01-$i-gene-ann-mod.bed
+done
+
+# find overlap 
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+bedtools intersect \
+-a 01-$i-gene-ann-mod.bed \
+-b 05-$i-lncRNA.bed \
+-wa -wb \
+> 06-$i-Overlapping-lncRNA.tvs
+done
+
+# find intergenic 
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+bedtools intersect \
+-a 05-$i-lncRNA.bed \
+-b 01-$i-gene-ann-mod.bed \
+-v \
+> 07-$i-Intergenic-lncRNA.bed
+done
+
+# Generate promoters 
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+awk 'BEGIN{OFS="\t"}
+{
+    if($6=="+"){
+        start=$2-1000;
+        if(start<0) start=0;
+        print $1,start,$2,$4,".",$6
+    }
+    else{
+        print $1,$3,$3+1000,$4,".",$6
+    }
+}' 01-$i-gene-ann-mod.bed > 02-$i-promoters.bed
+done
+
+# overlap with promoters
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+bedtools intersect \
+-a 05-$i-lncRNA.bed \
+-b 02-$i-promoters.bed \
+-wa -wb \
+> 09-$i-promoter-overlaps.tsv
+done
