@@ -1,0 +1,9 @@
+# filter gtf for lncRNA
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+awk 'NR==FNR{ids[$1]; next}
+     $3=="transcript" {
+         match($0,/transcript_id "([^"]+)"/,a)
+         if(a[1] in ids) print
+     }' 01-$i-lncRNA-Candidates.txt 01-$i-lncRNA-Mapped.gtf > 03-$i-lncRNA-Candidates.gtf
+donels
