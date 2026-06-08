@@ -1,0 +1,64 @@
+# find exon coordinates 
+for i in 4401 A1 A4 A5 G1 B3 C2 DAOM SL1
+do
+awk '$3=="exon"{
+match($9, /transcript_id "([^"]+)"/, t);
+print $1"\t"$4"\t"$5"\t"t[1]"\t.\t"$7
+}' 02-$i-lncRNA-filtered.gtf > 04-$i-lncRNA.exons.bed
+done
+
+# sort the file 
+for i in 4401 A1 A4 A5 G1 B3 C2 DAOM SL1
+do
+sort -k1,1 -k2,2n 04-$i-lncRNA.exons.bed > 05-$i-lncRNA-exons-sorted.bed
+done
+
+# Collapse isoforms 
+for i in 4401 A1 A4 A5 G1 B3 C2 DAOM SL1
+do
+bedtools merge \
+-i 05-$i-lncRNA-exons-sorted.bed \
+-s \
+-c 4,6 \
+-o distinct,distinct \
+> 06-$i-lncRNA.loci.bed
+done
+
+# Give locus ids
+for i in 4401 A1 A4 A5 G1 B3 C2 DAOM SL1
+do
+awk -v strain=$i '{
+print $1"\t"$2"\t"$3"\t"strain"_"NR"\t.\t"$6
+}' 06-$i-lncRNA.loci.bed > 07-$i-lncRNA.loci.id.bed
+done
+
+# join files 
+cat 07* > 08-Joint-Loci.bed
+
+# sort file 
+sort -k1,1 -k2,2n 08-Joint-Loci.bed > 08-Joint-Sorted-Loci.bed
+
+# Cluster file 
+bedtools cluster -i 08-Joint-Sorted-Loci.bed > 09-lncRNA-clustered.bed
+
+# build precence absance matrix 
+awk '{
+split($4,a,"_");
+strain=a[1];
+cluster=$6;
+print cluster"\t"strain
+}' 09-lncRNA-clustered.bed > 10-lncRNA-cluster_strain.txt
+
+# cont strains per cluster 
+awk '{count[$1]++; strains[$1]=strains[$1]","$2}
+END{
+for (i in count)
+print i"\t"count[i]"\t"strains[i]
+}' 10-lncRNA-cluster_strain.txt > 11-lncRNA-cluster_summary.txt
+
+# classify lncRNA
+awk -v total=9 '{
+if ($2 == total) print $0 "\tCORE"
+else if ($2 == 1) print $0 "\tSTRAIN_SPECIFIC"
+else print $0 "\tSHARED"
+}' 11-lncRNA-cluster_summary.txt > 12-lncRNA-cluster_summary.txt
