@@ -5,5 +5,35 @@ awk 'NR==FNR{ids[$1]; next}
      $3=="transcript" {
          match($0,/transcript_id "([^"]+)"/,a)
          if(a[1] in ids) print
-     }' 01-$i-lncRNA-Candidates.txt 01-$i-lncRNA-Mapped.gtf > 03-$i-lncRNA-Candidates.gtf
-donels
+     }' 01-$i-lncRNA-Candidates.txt 04-$i-lncRNA_candidates.gtf > 03-$i-lncRNA-Candidates.gtf
+done
+
+# filter for gne only 
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+awk '
+{
+    match($0, /transcript_id "([^"]+)"/, m);
+    if (!m[1]) next;
+
+    split(m[1], a, ".");
+    key = a[1] "." a[2];
+
+    if (!seen[key]++) print
+}
+' 03-$i-lncRNA-Candidates.gtf > 05-$i-lncRNA-Gene.gtf
+done
+
+# count the class codes
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+    echo "=== $i ==="
+    awk '$3=="transcript" {
+        match($0,/class_code "([^"]+)"/,a)
+        if(a[1]!="") c[a[1]]++
+    }
+    END{
+        for(i in c) print c[i], i
+    }' 05-$i-lncRNA-Gene.gtf | sort -nr
+    echo
+done
