@@ -1,11 +1,3 @@
-# length filtering  (00-LengthFilter.sh)
-for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1 
-do 
-seqkit seq -m 200 01-$i-illumina-filtered-simple.fasta > 02-$i-length-filtered.fasta
-wait 
-seqkit seq -n 02-$i-length-filtered.fasta > 02-$i-length-filtered-IDs.txt
-done 
-
 # filter gff (00-FilterGff.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
