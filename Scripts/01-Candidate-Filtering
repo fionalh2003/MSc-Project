@@ -3,3 +3,9 @@ for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
 seqkit seq -m 200 01-$i-illumina-filtered-simple.fasta > 02-$i-length-filtered.fasta
 done
+
+# list of headers (00-Headers.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+seqkit seq -n 02-$i-length-filtered.fasta > 03-$i-length-filtered.txt
+done
