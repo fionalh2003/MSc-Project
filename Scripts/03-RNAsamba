@@ -5,7 +5,7 @@ do
 
     rnasamba classify \
       01-$i-RNAsamba_output.tsv \
-      08-$i-Gff-filtered.fasta \
+      09-$i-GffCompare-lncRNA.fasta \
       full_length_weights.hdf5
 done
 
@@ -19,6 +19,6 @@ done
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
 awk '$3=="noncoding"{print $1}' 02-$i-NonCoding.tsv \
-  | seqkit grep -f - 08-$i-Gff-filtered.fasta \
+  | seqkit grep -f - 09-$i-GffCompare-lncRNA.fasta  \
   -o 03-$i-NonCoding.fasta
 done
