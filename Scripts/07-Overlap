@@ -1,3 +1,35 @@
+# merge bed file with class code (00-Codes.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+awk '$3=="transcript"' 04-$i-GFFCompare.annotated.gtf | awk '
+{
+  match($0, /gene_id "([^"]+)"/, g);
+  match($0, /class_code "([^"]+)"/, c);
+  print g[1]"\t"c[1]
+}' > 03-$i-Class.tsv
+wait
+awk '{count[$1" "$2]++; genes[$1]++} END {
+for (i in count) {
+split(i,a," ");
+gene=a[1]; code=a[2];
+print gene"\t"code
+}
+}' 03-$i-Class.tsv > 03-$i-gene-class.collapsed.tsv
+wait
+awk 'NR==FNR{a[$1]=$2; next} {print $0"\t"a[$2]}' \
+03-$i-gene-class.collapsed.tsv \
+07-$i-lncRNA-loci.bed \
+> 08-$i-lncRNA-loci-codes.bed
+done
+
+
+
+
+
+
+
+
+
 # filter gtf for lncRNA candidates (00-FilterGTF.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM SL1 G1
 do
