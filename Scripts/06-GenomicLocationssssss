@@ -16,7 +16,21 @@ done
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
 gffcompare -r 02-${i}-gene-ann-mod.gtf -o 04-${i}-GFFCompare 03-$i-lncRNA-Mapped.gtf
-donecd 06  
+done
+
+# count class codes (00-Codes.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+    echo "=== $i ==="
+    awk '$3=="transcript" {
+        match($0,/class_code "([^"]+)"/,a)
+        if(a[1]!="") c[a[1]]++
+    }
+    END{
+        for(i in c) print c[i], i
+    }' 04-$i-GFFCompare.annotated.gtf | sort -nr
+    echo
+done
 
 # extract transcripts and converts to BED (00-BED.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
