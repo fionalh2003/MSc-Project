@@ -1,0 +1,44 @@
+# extract headers (00-Headers.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+grep "^>" 02-$i-lncRNA-Candidates.fasta | sed 's/^>//' > 01-$i-lncRNA.txt
+done
+
+# filter GFF compare (00-FilterGFF.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+grep -F -w -f 01-$i-lncRNA.txt 05-$i-mapped.gff > 03-$i-lncRNA-Mapped.gff
+wait
+gffread 03-$i-lncRNA-Mapped.gff -T -o 03-$i-lncRNA-Mapped.gtf
+done
+
+# run gff comparre again
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+gffcompare -r 02-${i}-gene-ann-mod.gtf -o 04-${i}-GFFCompare 03-$i-lncRNA-Mapped.gtf
+donecd 06  
+
+# extract transcripts and converts to BED (00-BED.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+awk -F'\t' '
+$3=="transcript"{
+    match($9,/gene_id "[^"]+"/)
+    gene=substr($9,RSTART+10,RLENGTH-11)
+
+    print $1, $4-1, $5, gene, ".", $7
+}' 04-$i-GFFCompare.annotated.gtf > 06-$i-lncRNA.bed
+done
+
+# colapse isoforms (00-Collapse.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+    sort -k1,1 -k2,2n "06-$i-lncRNA.bed" > "06-$i-tmp.bed"
+
+    bedtools groupby \
+        -i "06-$i-tmp.bed" \
+        -g 1,4,6 \
+        -c 2,3 \
+        -o min,max \
+        > "07-$i-lncRNA-loci.bed"
+done
