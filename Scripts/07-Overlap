@@ -22,94 +22,42 @@ awk 'NR==FNR{a[$1]=$2; next} {print $0"\t"a[$2]}' \
 > 08-$i-lncRNA-loci-codes.bed
 done
 
-
-
-
-
-
-
-
-
-# filter gtf for lncRNA candidates (00-FilterGTF.sh)
-for i in 4401 A1 A4 A5 B3 C2 DAOM SL1 G1
-do
-awk '
-BEGIN{FS=OFS="\t"}
-
-NR==FNR {
-    id=$1
-    sub(/^>/,"",id)
-    keep[id]
-    next
-}
-
-$3=="transcript" {
-
-    if (match($9, /transcript_id "([^"]+)"/, a)) {
-
-        if (a[1] in keep)
-
-            print
-    }
-}
-' 01-$i-lncRNACandidateIDs.txt \
-  03-$i-GFFCompare.annotated.gtf \
-  > 04-$i-lncRNA-filtered.gtf
-
-done
-
-# convert gtf to bed file (00-BED.sh)
+# seperate the class codes (00-SeperateCodes.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
-awk 'BEGIN{OFS="\t"}
-$3=="transcript"{
-    match($0,/transcript_id "([^"]+)"/,a);
-    print $1,$4-1,$5,a[1],".",$7
-}' 02-$i-gene-ann-mod.gtf > 01-$i-gene-ann-mod.bed
+awk '{print > "'09-$i'_"$6".bed"}' 08-$i-lncRNA-loci-codes.bed
 done
 
-# find overlap 
-for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+# fix chromosomes (00-Chromosomes.sh)
+for i in A4Hap1 A4Hap2 A5Hap1 A5Hap2 G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
 do
-bedtools intersect \
--a 01-$i-gene-ann-mod.bed \
--b 05-$i-lncRNA.bed \
--wa -wb \
-> 06-$i-Overlapping-lncRNA.tvs
+awk 'BEGIN{OFS="\t"} {
+  split($1,a,"_");
+  gsub("chr","",a[1]);
+  $1="chr_"a[1];
+  print
+}' 10-$i.bed > 10-$i-u.bed
+wait
+awk 'BEGIN{OFS="\t"} {
+  split($1,a,"_");
+  gsub("chr","",a[1]);
+  $1="chr_"a[1];
+  print
+}' 01-$i-genes.bed > 010-$i-genes.bed
 done
 
-# find intergenic 
-for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+# sort the bed files (00-SortBED.sh)
+for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
 do
-bedtools intersect \
--a 05-$i-lncRNA.bed \
--b 01-$i-gene-ann-mod.bed \
--v \
-> 07-$i-Intergenic-lncRNA.bed
+sort -k1,1 -k2,2n 10-$i-u.clean.bed > 10-$i-u.sorted.bed
+sort -k1,1 -k2,2n 01-$i-genes.bed > 01-$i-genes.sorted.bed
 done
 
-# Generate promoters 
-for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+# Distance to gene for intergenic (00-IntergenicGenes.sh)
+for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
 do
-awk 'BEGIN{OFS="\t"}
-{
-    if($6=="+"){
-        start=$2-1000;
-        if(start<0) start=0;
-        print $1,start,$2,$4,".",$6
-    }
-    else{
-        print $1,$3,$3+1000,$4,".",$6
-    }
-}' 01-$i-gene-ann-mod.bed > 02-$i-promoters.bed
+bedtools closest -a 10-$i-u.sorted.bed -b 01-$i-genes.sorted.bed -d > 06-$i-IntergenicDistance.tsv
 done
 
-# overlap with promoters
-for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
-do
-bedtools intersect \
--a 05-$i-lncRNA.bed \
--b 02-$i-promoters.bed \
--wa -wb \
-> 09-$i-promoter-overlaps.tsv
-done
+# Merge distance and strain
+for f in 06-*-IntergenicDistance.tsv; do strain=$(echo $f | sed 's/06-//' | sed 's/-IntergenicDistance.tvs//'); awk -v s="$strain" '{print $NF\t"s}' "$f"; done > 11-Intergenic.tsv
