@@ -61,3 +61,31 @@ done
 
 # Merge distance and strain
 for f in 06-*-IntergenicDistance.tsv; do strain=$(echo $f | sed 's/06-//' | sed 's/-IntergenicDistance.tvs//'); awk -v s="$strain" '{print $NF\t"s}' "$f"; done > 11-Intergenic.tsv
+
+# Distance to gene for intergenic (00-IntergenicGenes.sh)
+for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
+do
+bedtools closest -a 02-A4Hap2-x.sorted.bed -b 01-$i-genes.sorted.bed -d > 06-$i-IntergenicDistance.tsv
+done
+
+# overlap for Sense (00-SenseOverlap.sh)
+for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
+do
+    bedtools intersect \
+        -a 02-$i-o.bed6 \
+        -b 01-$i-genes.sorted.bed \
+        -s \
+        -wo \
+        > 03-$i-SenseOverlap.txt
+done
+
+# overlap for antisense (00-AntisenseOverlap.sh)
+for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
+do
+    bedtools intersect \
+        -a 02-$i-x.bed6 \
+        -b 01-$i-genes.sorted.bed \
+        -S \
+        -wo \
+        > 03-$i-AntisenseOverlap.txt
+done
