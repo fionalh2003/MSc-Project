@@ -28,6 +28,14 @@ do
 awk '{print > "'09-$i'_"$6".bed"}' 08-$i-lncRNA-loci-codes.bed
 done
 
+# seperate by haplotype (00-Haplotype.sh) 
+for i in A4 A5 G1 SL1
+do
+awk '$1 ~ /_Hap1$/' 07-$i-lncRNA-loci.bed > 07-${i}Hap1-lncRNA-loci.bed
+wait
+awk '$1 ~ /_Hap2$/' 07-$i-lncRNA-loci.bed > 07-${i}Hap2-lncRNA-loci.bed
+done
+
 # fix chromosomes (00-Chromosomes.sh)
 for i in A4Hap1 A4Hap2 A5Hap1 A5Hap2 G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
 do
