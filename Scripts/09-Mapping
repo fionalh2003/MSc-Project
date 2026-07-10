@@ -1,6 +1,34 @@
-# change headers 
- awk '/^>/ {print ">lncRNA-" ++i; next} {print}' 04-Clustered-lncRNA.fasta > 02-lncRNA-
-Candidates.fasta
+# Longest Isoform (00-LongestIsoform.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+seqkit fx2tab -n -l 02-$i-lncRNA-Candidates.fasta \
+| awk '
+{
+    split($1,a,".");
+    locus=a[1]"."a[2];
+    if($2>len[locus]){
+        len[locus]=$2;
+        id[locus]=$1;
+    }
+}
+END{
+    for(i in id)
+        print id[i]
+}' > 03-$i-lncRNA-LongestIsoform.txt
+
+wait
+
+seqkit grep -f 03-$i-lncRNA-LongestIsoform.txt 02-$i-lncRNA-Candidates.fasta > 04-$i-lncRNA-Loci.fasta
+done
+
+# add strain name to headers (00-Headers.sh)
+ sed "s/^>/\>SL1Hap2|/" 05-SL1Hap2-lncRNA-Loci.fasta > 06-SL1Hap2-lncRNA-Loci.fasta
+
+# join fasta together
+cat 06* > 07-Joint-lncRNA.fasta
+
+# cluster together
+cd-hit-est -i 07-Joint-lncRNA.fasta -o 08-Clustered-lncRNA.fasta -c 0.90 -aS 0.80 -aL 0.80 -G 0 -g 1 -T 8 -M 0
 
 # Mapping transcripts to the genomes (00-Mapping.sh)
 for i in A4-hap1 A4-hap2 A5-hap1 A5-hap2 G1-hap1 G1-hap2 SL1-hap1 SL1-hap2 4401 A1 B3 C2 DAOM $
