@@ -1,0 +1,13 @@
+# filter proteins for overlap/close 
+seqkit grep -f 02-4401-Antisense-Genes.txt 11-4401-proteins.fa > 03-4401-Antisense-Proteins.fa
+
+# run eggnog
+for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2
+do
+    emapper.py \
+    -i 03-$i-Antisense-Proteins.fa \
+    -m diamond \
+    --itype proteins \
+    --data_dir /home/eniac/eggnog-mapper/data \
+    -o 04-$i-Antisense-Proteins
+done
