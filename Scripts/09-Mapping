@@ -30,17 +30,41 @@ cat 06* > 07-Joint-lncRNA.fasta
 # cluster together
 cd-hit-est -i 07-Joint-lncRNA.fasta -o 08-Clustered-lncRNA.fasta -c 0.90 -aS 0.80 -aL 0.80 -G 0 -g 1 -T 8 -M 0
 
-# Mapping transcripts to the genomes (00-Mapping.sh)
-for i in A4-hap1 A4-hap2 A5-hap1 A5-hap2 G1-hap1 G1-hap2 SL1-hap1 SL1-hap2 4401 A1 B3 C2 DAOM $
+for i in A4Hap1 A4Hap2 A5Hap1 A5Hap2 G1Hap1 G1Hap2 SL1Hap1 SL1Hap2 4401 A1 B3 C2 DAOM
 do
-minimap2 -x splice:hq -uf 01-$i-genome.fasta 02-lncRNA-Candidates.fasta > 03-$i-MiniMap.txt
+minimap2 -x splice:hq -uf 01-$i-genome.fasta 08-Clustered-lncRNA.fasta > 03-$i-MiniMap.txt
 done
 
 # Filtering to keep high quality (00-FilteringMap.sh)
-for i in A4-hap1 A4-hap2 A5-hap1 A5-hap2 G1-hap1 G1-hap2 SL1-hap1 SL1-hap2 4401 A1 B3 C2 DAOM 
-do 
-awk '$12 > 30' 03-$i-MiniMap.txt  > 05-$i-FilteredMiniMap.txt
+#Primary alignments only (tp:A:P)
+#High mapping quality (MAPQ ≥ 60)
+#Query coverage (e.g. ≥90%)
+#Sequence divergence (e.g. dv ≤ 0.05)
+for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
+do
+    awk 'BEGIN{OFS="\t"}
+    {
+        coverage = ($4-$3)/$2
+
+        primary = 0
+        dv = 1
+
+        for(i=13;i<=NF;i++){
+            if($i=="tp:A:P") primary=1
+            if($i~/^dv:f:/){
+                split($i,a,":")
+                dv=a[3]
+            }
+        }
+
+        if(primary &&
+           $12>=60 &&
+           coverage>=0.90 &&
+           dv<=0.05)
+            print
+    }' 03-$i-MiniMap.txt > 04-$i-FilteredMiniMap.txt
 done
+
 
 # Simplify hetero minimap
 for i in A4-hap1 A4-hap2 A5-hap1 A5-hap2 G1-hap1 G1-hap2 SL1-hap1 SL1-hap2
