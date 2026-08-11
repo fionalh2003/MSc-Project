@@ -1,3 +1,6 @@
+Compare cpat to rna samba 
+seqkit common -n 03-SL1-NonCoding.fasta 04-SL1-CPAT-lncRNA.fasta > 01-SL1-NonCoding.fasta
+
 # Download database 
 wget ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
 
