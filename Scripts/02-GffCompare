@@ -9,62 +9,24 @@ done
 # Running Gff compare (00-Gffcompare.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
-gffcompare -r 02-${i}-gene-ann-mod.gtf -o 03-${i}-GFFCompare 01-$i-lncRNA-Mapped.gtf
+gffcompare -r 02-${i}-gene-ann-mod.gtf -o 04-${i}-GFFCompare 01-$i-lncRNA-Mapped.gtf
 done
 
-# Filter for only lncRNA codes and at least 2 exons (00-Codes.sh)
+# Filter for only lncRNA codes (00-Codes.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
-
-awk '
-
-# Transcript lines with desired class_code
-$3 == "transcript" {
-
-    if (match($0, /class_code "([a-z])"/, a)) {
-
-        if (a[1] ~ /^[uixo]$/) {
-
-            match($0, /transcript_id "([^"]+)"/, t)
-            tid = t[1]
-
-            keep[tid] = 1
-        }
+  awk '
+    match($0, /transcript_id "([^"]+)"/, id) {
+      tid = id[1]
+      lines[tid] = lines[tid] $0 "\n"
+      if ($3 == "transcript" && $0 ~ /class_code "[uixo]"/) keep[tid] = 1
     }
-}
-
-# Count exons for kept transcripts
-$3 == "exon" {
-
-    match($0, /transcript_id "([^"]+)"/, t)nanp
-    tid = t[1]
-
-    if (keep[tid])
-        exon_count[tid]++
-}
-
-# Store all lines
-{
-    match($0, /transcript_id "([^"]+)"/, t)
-    tid = t[1]
-
-    all_lines[tid] = all_lines[tid] $0 "\n"
-}
-
-END {
-
-    for (tid in keep) {
-
-        if (exon_count[tid] >= 2)
-
-            printf "%s", all_lines[tid]
+    END {
+      for (tid in keep)
+        printf "%s", lines[tid]
     }
-}
-
-' 03-$i-GFFCompare.annotated.gtf > 04-$i-lncRNA_candidates.gtf
-
+  ' "04-$i-GFFCompare.annotated.gtf" > "06-$i-lncRNA_candidates.gtf"
 done
-
 
 # Just transcript ID and code (00-GffIDs.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
