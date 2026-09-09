@@ -1,0 +1,5 @@
+# add strain name to header
+
+# Cluster file
+cat 02* > 01-Joint-lncRNA.fasta
+cd-hit-est -i 03-Joint-lncRNA.fasta   -o 04-Clustered-lncRNA.fasta   -c 0.98   -aS 0.95   -aL 0.95   -G 0   -g 1   
