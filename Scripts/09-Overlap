@@ -36,6 +36,10 @@ wait
 awk '$1 ~ /_Hap2$/' 07-$i-lncRNA-loci.bed > 07-${i}Hap2-lncRNA-loci.bed
 done
 
+
+
+
+
 # fix chromosomes (00-Chromosomes.sh)
 for i in A4Hap1 A4Hap2 A5Hap1 A5Hap2 G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
 do
