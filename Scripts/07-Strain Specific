@@ -1,4 +1,5 @@
 # add strain name to header
+sed 's/^>/>SL1_/' 02-$i-lncRNA-Candidates.fasta > 03-$i-lncRNA-Candidates.fasta
 
 # Cluster file
 cat 02* > 01-Joint-lncRNA.fasta
