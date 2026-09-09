@@ -1,5 +1,3 @@
-Compare cpat to rna samba 
-seqkit common -n 03-SL1-NonCoding.fasta 04-SL1-CPAT-lncRNA.fasta > 01-SL1-NonCoding.fasta
 
 # Download database 
 wget ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
@@ -27,4 +25,5 @@ grep -v "^#" pfam.domtblout | awk '{print $4}' | sort | uniq > pfam_hits.txt
 sed 's/\.[^.]*$//' pfam_hits.txt | sort -u > pfam_transcripts.txt
 
 # Remove hits from fasta 
-seqkit grep -v -f pfam_transcripts.txt 03-$i-NonCoding.fasta > 04-$i-PfamFiltered.fasta
+seqkit grep -v -f pfam_transcripts.txt 05-$i-cpat-lnRNA-pred_IDs.fasta > 04-$i-PfamFiltered.fasta
+
