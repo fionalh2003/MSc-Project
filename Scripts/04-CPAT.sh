@@ -11,22 +11,10 @@ make_logitModel \
 -o 05-CandidaAlbicans
 
 # Run CPAT with Candida model
-cpat.py \
--g 10-RNAsamba-Joint.fasta \
--d 05-CandidaAlbicans.logit.RData \
--x 03-CandidaAlbicansHexamerTable.tsv \
--o Rhizophagus_CPAT
-
-# Filter predicted lncRNAs
-awk 'NR>1 && $NF <= 0.54 {print $1}' Rhizophagus_CPAT.ORF_prob.best.tsv \
-> 06-RhizophagusIrregularisCandidaPredicted_lncRNAIDs.txt
-
-# Extract IDs
-cut -f1 06-RhizophagusIrregularisCandidaPredicted_lncRNAIDs.txt | tail -n +2 \
-> 07-RhizophagusPredicted_lncRNA_IDs.txt
+cpat -x 03-CandidaAlbicansHexamerTable.tsv  -d  05-CandidaAlbicans.logit.RData  --top-orf=100  --antisense -g 10-RNAsamba-Joint.fasta -o Rhizophagus_CPAT
 
 # Extract FASTA sequences from Candida prediction
-seqkit grep -f 07-RhizophagusPredicted_lncRNA_IDs.txt \
+seqkit grep -f Rhizophagus_CPAT.no_ORF.txt \
 10-RNAsamba-Joint.fasta \
 > 08-RhizophagusPredicted_lncRNA_IDs.fasta
 
@@ -37,42 +25,25 @@ make_hexamer_tab -c 01-RhizophagusIrregularisCDS.fasta -n 08-RhizophagusPredicte
 make_logitModel -x 03-RhizophagusIrregularisHexamerTable.tsv -c 04-RhizophagusIrregularisRNA.fasta -n 08-RhizophagusPredicted_lncRNA_IDs.fasta -o 05-RhizophagusIrregularis
 
 # Run CPAT with first AMF 
-cpat.py   -g 04-RhizophagusIrregularisRNA.fasta   -d 05-RhizophagusIrregularis.logit.RData   -x 03-RhizophagusIrregularisHexamerTable.tsv   -o 06-Rhizophagus_CPAT
-
-# Filter predicted lncRNAs
-awk 'NR>1 && $NF <= 0.54 {print $1}' 06-Rhizophagus_CPAT.ORF_prob.best.tsv > 07-RhizophagusPredicted_lncRNA_IDs.txt 
-
-# Extract IDs
-cut -f1 07-RhizophagusPredicted_lncRNA_IDs.txt | tail -n +2 > 08-RhizophagusPredicted_lncRNA_IDs.txt
-
+cpat -x 03-RhizophagusIrregularisHexamerTable.tsv   -d  05-RhizophagusIrregularis.logit.RData  --top-orf=100  --antisense -g 10-RNAsamba-Joint.fasta -o 06-Rhizophagus_CPAT
+  
 # Extract FASTA sequences for first AMF
-seqkit grep -f 08-RhizophagusPredicted_lncRNA_IDs.txt 04-RhizophagusIrregularisRNA.fasta > 09-RhizophagusPredicted_lncRNA_IDs.fasta
+seqkit grep -f 06-Rhizophagus_CPAT.no_ORF.txt 10-RNAsamba-Joint.fasta > 99-RhizophagusPredicted_lncRNA_IDs.fasta
 
 # Generate hexamer table with refined AMF predictions
-make_hexamer_tab -c 01-RhizophagusIrregularisCDS.fasta -n 09-RhizophagusPredicted_lncRNA_IDs.fasta >11-RhizophagusIrregularisNewHexamerTable.tsv
+make_hexamer_tab -c 01-RhizophagusIrregularisCDS.fasta -n 99-RhizophagusPredicted_lncRNA_IDs.fasta >11-RhizophagusIrregularisNewHexamerTable.tsv
 
 # Train logistic model with refined AMF predictions
-make_logitModel -x 11-RhizophagusIrregularisNewHexamerTable.tsv -c 04-RhizophagusIrregularisRNA.fasta -n 09-RhizophagusPredicted_lncRNA_IDs.fasta -o 55-RhizophagusIrregularisNew
+make_logitModel -x 11-RhizophagusIrregularisNewHexamerTable.tsv -c 04-RhizophagusIrregularisRNA.fasta -n 99-RhizophagusPredicted_lncRNA_IDs.fasta -o 55-RhizophagusIrregularisNew
 
 # Run final  CPAT 00-cpat.sh
 for i in 4401 A1 B3 C2 DAOM A4 A5 G1 SL1
 do
-
-cpat -x 11-RhizophagusIrregularisNewHexamerTable.tsv \
--d 55-RhizophagusIrregularisNew.logit.RData --top-orf=5 \
--g 09-$i-GffCompare-lncRNA.fasta -o 02-$i-cpat-lnRNA-pred
+cpat -x 11-RhizophagusIrregularisNewHexamerTable.tsv   -d  55-RhizophagusIrregularisNew.logit.RData  --top-orf=100  --antisense -g 03-$i-NonCoding.fasta -o 02-$i-cpat-lnRNA-pred
 wait
-awk 'NR>1 && $NF <= 0.54 {print $1}' 02-$i-cpat-lnRNA-pred.ORF_prob.best.tsv > 03-$i-cpat-lnRNA-pred_IDs.txt 
-wait
-seqkit grep -n -f 03-$i-cpat-lnRNA-pred_IDs.txt \
-09-$i-GffCompare-lncRNA.fasta \
+seqkit grep -n -f 02-$i-cpat-lnRNA-pred.no_ORF.txt \
+03-$i-NonCoding.fasta \
 > 05-$i-cpat-lnRNA-pred_IDs.fasta
 done
 
-# Seperating haplotypes
-for i in A4 A5 G1 SL1
-do
-grep -wFf 03-$i-cpat-lnRNA-pred_IDs.txt 03-$i-mapped_classification.filtered_lite_classification.txt | awk '{OFS="\t"} $2 ~ /Hap1/ {print $1, $2, $7}' > 33-$i-lncRNA-Hap1.txt
-wait
-grep -wFf 03-$i-cpat-lnRNA-pred_IDs.txt 03-$i-mapped_classification.filtered_lite_classification.txt | awk '{OFS="\t"} $2 ~ /Hap2/ {print $1, $2, $7}' > 33-$i-lncRNA-Hap2.txt
-done
+
