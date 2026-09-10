@@ -22,82 +22,72 @@ awk 'NR==FNR{a[$1]=$2; next} {print $0"\t"a[$2]}' \
 > 08-$i-lncRNA-loci-codes.bed
 done
 
+# seperate haplotypes (00-Haplotype.sh)
+for i in A4 A5 G1 SL1
+do
+awk '$1 ~ /_Hap1$/' 08-$i-lncRNA-loci-codes.bed > 08-${i}Hap1-lncRNA-loci.bed
+wait
+awk '$1 ~ /_Hap2$/' 08-$i-lncRNA-loci-codes.bed > 08-${i}Hap2-lncRNA-loci.bed
+done
+
+# fix the chromosomes (00-Chromosomes.sh)
+for i in A4Hap1 A4Hap2 A5Hap1 A5Hap2 G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
+do
+awk '
+  BEGIN { OFS="\t" }
+  {
+    chrom = $1
+    sub(/_.*/, "", chrom)
+    sub(/^chr/, "chr_", chrom)
+    $1 = chrom
+    print
+  }
+' 08-$i-lncRNA-loci-codes.bed > 09-$i-lncRNA-loci-codes.bed
+done
+
 # seperate the class codes (00-SeperateCodes.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
 awk '{print > "'09-$i'_"$6".bed"}' 08-$i-lncRNA-loci-codes.bed
 done
 
-# seperate by haplotype (00-Haplotype.sh) 
-for i in A4 A5 G1 SL1
-do
-awk '$1 ~ /_Hap1$/' 07-$i-lncRNA-loci.bed > 07-${i}Hap1-lncRNA-loci.bed
-wait
-awk '$1 ~ /_Hap2$/' 07-$i-lncRNA-loci.bed > 07-${i}Hap2-lncRNA-loci.bed
-done
-
-
-
-
-
-# fix chromosomes (00-Chromosomes.sh)
-for i in A4Hap1 A4Hap2 A5Hap1 A5Hap2 G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
-do
-awk 'BEGIN{OFS="\t"} {
-  split($1,a,"_");
-  gsub("chr","",a[1]);
-  $1="chr_"a[1];
-  print
-}' 10-$i.bed > 10-$i-u.bed
-wait
-awk 'BEGIN{OFS="\t"} {
-  split($1,a,"_");
-  gsub("chr","",a[1]);
-  $1="chr_"a[1];
-  print
-}' 01-$i-genes.bed > 010-$i-genes.bed
-done
-
-# sort the bed files (00-SortBED.sh)
+# sort the bed files (00-SORT.sh)
 for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
 do
-sort -k1,1 -k2,2n 10-$i-u.clean.bed > 10-$i-u.sorted.bed
-sort -k1,1 -k2,2n 01-$i-genes.bed > 01-$i-genes.sorted.bed
+sort -k1,1 -k2,2n 02-$i-u.bed > 02-$i-u-sorted.bed
 done
 
-# Distance to gene for intergenic (00-IntergenicGenes.sh)
+# closest gene (00-IntergenicDistance.sh)
 for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
 do
-bedtools closest -a 10-$i-u.sorted.bed -b 01-$i-genes.sorted.bed -d > 06-$i-IntergenicDistance.tsv
-done
-
-# Merge distance and strain
-for f in 06-*-IntergenicDistance.tsv; do strain=$(echo $f | sed 's/06-//' | sed 's/-IntergenicDistance.tvs//'); awk -v s="$strain" '{print $NF\t"s}' "$f"; done > 11-Intergenic.tsv
-
-# Distance to gene for intergenic (00-IntergenicGenes.sh)
-for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
-do
-bedtools closest -a 02-A4Hap2-x.sorted.bed -b 01-$i-genes.sorted.bed -d > 06-$i-IntergenicDistance.tsv
+  bedtools closest \
+    -a "02-${i}-u-sorted.bed" \
+    -b "01-${i}-genes.sorted.bed" \
+    -d > "03-${i}-IntergenicDistance.tsv"
 done
 
 # overlap for Sense (00-SenseOverlap.sh)
 for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
 do
     bedtools intersect \
-        -a 02-$i-o.bed6 \
+        -a 01-$i-o.bed \
         -b 01-$i-genes.sorted.bed \
-        -s \
         -wo \
-        > 03-$i-SenseOverlap.txt
+        > 02-$i-SenseOverlap.txt
 done
 
 # overlap for antisense (00-AntisenseOverlap.sh)
 for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
 do
     bedtools intersect \
-        -a 02-$i-x.bed6 \
+        -a 02-$i-x.bed \
         -b 01-$i-genes.sorted.bed \
-        -S \
         -wo \
         > 03-$i-AntisenseOverlap.txt
+done
+
+# Get list of genes
+for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
+do
+cut -f10 03-$i-IntergenicDistance.tsv | sort -u > 04-$i-IntergenicGenes.txt
 done
