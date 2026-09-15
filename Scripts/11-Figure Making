@@ -1,0 +1,41 @@
+#GC
+from Bio import SeqIO
+
+strains = ["4401","A1","A4","A5","B3","C2","DAOM","G1","SL1"]
+
+with open("all_gc_content.txt","w") as out:
+    out.write("Strain\tTranscript\tGC\n")
+
+    for s in strains:
+        fasta = f"02-{s}-lncRNA-Candidates.fasta"
+
+        for record in SeqIO.parse(fasta, "fasta"):
+            seq = record.seq.upper()
+            gc = (seq.count("G") + seq.count("C")) / len(seq)
+            out.write(f"{s}\t{record.id}\t{gc}\n")
+
+# Exons
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1; do
+    awk -v strain="$i" '$3=="exon" {
+        match($0,/transcript_id "[^"]+"/)
+        tx=substr($0,RSTART+15,RLENGTH-16)
+        count[tx]++
+    }
+    END{
+        for(tx in count)
+            print strain"\t"tx"\t"count[tx]
+    }' 02-$i-lncRNA.gtf
+done > 04-ExonCounts.txt
+
+# length
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1; do
+    awk -v strain="$i" '$3=="exon" {
+        match($0,/transcript_id "[^"]+"/)
+        tx=substr($0,RSTART+15,RLENGTH-16)
+        count[tx]++
+    }
+    END{
+        for(tx in count)
+            print strain"\t"tx"\t"count[tx]
+    }' 02-$i-lncRNA.gtf
+done > 04-ExonCounts.txt
