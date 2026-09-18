@@ -30,3 +30,9 @@ done
 # Cluster file
 cat 04* > 05-Joint-lncRNA.fasta
 cd-hit-est -i 05-Joint-lncRNA.fasta   -o 06-Clustered-lncRNA.fasta   -c 0.98   -aS 0.95   -aL 0.95   -G 0   -g 1   
+
+Mapping to genome (Mapping.sh)
+for i in A4Hap1 A4Hap2 A5Hap1 A5Hap2 G1Hap1 G1Hap2 SL1Hap1 SL1Hap2 4401 A1 B3 C2 DAOM
+do
+minimap2 -x splice:hq -uf 01-$i-genome.fasta 06-Clustered-lncRNA.fasta > 07-$i-MiniMap.txt
+done
