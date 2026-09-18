@@ -4,6 +4,29 @@ do
     sed "s/^>/>${i}_/" 02-$i-lncRNA-Candidates.fasta > 03-$i-lncRNA-Candidates.fasta
 done
 
+# Longest Isoform (00-LongestIsoform.sh)
+for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
+do
+seqkit fx2tab -n -l 03-$i-lncRNA-Candidates.fasta \
+| awk '
+{
+    split($1,a,".");
+    locus=a[1]"."a[2];
+    if($2>len[locus]){
+        len[locus]=$2;
+        id[locus]=$1;
+    }
+}
+END{
+    for(i in id)
+        print id[i]
+}' > 03-$i-lncRNA-LongestIsoform.txt
+
+wait
+
+seqkit grep -f 03-$i-lncRNA-LongestIsoform.txt 03-$i-lncRNA-Candidates.fasta > 04-$i-lncRNA-Loci.fasta
+done
+
 # Cluster file
-cat 02* > 01-Joint-lncRNA.fasta
-cd-hit-est -i 03-Joint-lncRNA.fasta   -o 04-Clustered-lncRNA.fasta   -c 0.98   -aS 0.95   -aL 0.95   -G 0   -g 1   
+cat 04* > 05-Joint-lncRNA.fasta
+cd-hit-est -i 05-Joint-lncRNA.fasta   -o 06-Clustered-lncRNA.fasta   -c 0.98   -aS 0.95   -aL 0.95   -G 0   -g 1   
