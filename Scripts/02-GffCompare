@@ -19,7 +19,7 @@ do
     match($0, /transcript_id "([^"]+)"/, id) {
       tid = id[1]
       lines[tid] = lines[tid] $0 "\n"
-      if ($3 == "transcript" && $0 ~ /class_code "[uixo]"/) keep[tid] = 1
+      if ($3 == "transcript" && $0 ~ /class_code "[ux]"/) keep[tid] = 1
     }
     END {
       for (tid in keep)
