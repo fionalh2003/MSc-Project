@@ -54,7 +54,7 @@ done
 # sort the bed files (00-SORT.sh)
 for i in 4401 A1 A4Hap1 A4Hap2 A5Hap1 A5Hap2 B3 C2 DAOM G1Hap1 G1Hap2 SL1Hap1 SL1Hap2
 do
-sort -k1,1 -k2,2n 02-$i-u.bed > 02-$i-u-sorted.bed
+awk '{print $1"\t"$4"\t"$5"\t"$2"\t0\t"$3}' input.txt > reformatted.bed
 done
 
 # closest gene (00-IntergenicDistance.sh)
