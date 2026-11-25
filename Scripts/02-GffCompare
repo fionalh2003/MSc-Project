@@ -6,7 +6,7 @@ wait
 gffread 01-$i-lncRNA-Mapped.gff -T -o 01-$i-lncRNA-Mapped.gtf
 done
 
-# Running Gff compare (00-Gffcompare.sh)
+# Running Gff compare (00-GffCompare.sh)
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
 gffcompare -r 02-${i}-gene-ann-mod.gtf -o 04-${i}-GFFCompare 01-$i-lncRNA-Mapped.gtf
@@ -19,7 +19,7 @@ do
     match($0, /transcript_id "([^"]+)"/, id) {
       tid = id[1]
       lines[tid] = lines[tid] $0 "\n"
-      if ($3 == "transcript" && $0 ~ /class_code "[ux]"/) keep[tid] = 1
+      if ($3 == "transcript" && $0 ~ /class_code "[uxio]"/) keep[tid] = 1
     }
     END {
       for (tid in keep)
