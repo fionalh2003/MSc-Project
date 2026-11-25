@@ -1,4 +1,4 @@
-# length filter (00-LengthFilter.sh)
+# length filter (00-LengthFilter.sh), lncRNA are at least 200 nucleotides long
 for i in 4401 A1 A4 A5 B3 C2 DAOM G1 SL1
 do
   seqkit seq -g -m 200 01-$i-illumina-filtered-simple.fasta > 02-$i-length-filtered.fasta
